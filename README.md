@@ -9,6 +9,7 @@ Follow these steps to create and configure the conda environment for the project
 1. Create the environment
 
     conda create -n poresct4amm2526 python=3.13
+    
     conda activate poresct4amm2526
 
 2. Install PorePy
@@ -17,7 +18,7 @@ Clone the repository:
 
     git clone https://github.com/pmgbergen/porepy.git
 
-cd porepy
+    cd porepy
 
 Switch to the stable version:
 
@@ -31,38 +32,11 @@ Install PorePy and its dependencies:
 
 Clone the repository:
 
-git clone https://github.com/compgeo-mox/pygeon.git
+    git clone https://github.com/compgeo-mox/pygeon.git
 
     cd pygeon
 
 Install PyGeon and its dependencies:
-
-    pip install .
-
-
-$ conda create -n poresct4amm2526 python=3.13
-
-Then we are going to install porepy. To do that we need to clone the following repository:
-
-    git clone https://github.com/pmgbergen/porepy.git
-
-    cd porepy
-
-The default branch is `develop`. To get the stable version:
-
-    git checkout main
-
-Install PorePy and the needed requirements
-
-    pip install .
-
-The same should be repeat for pygeon:
-
-    git clone https://github.com/compgeo-mox/pygeon.git
-
-    cd pygeon 
-
-Install pygeon and the needed requirements
 
     pip install .
 
