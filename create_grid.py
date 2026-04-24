@@ -9,7 +9,7 @@ Public functions are grouped at the top of the file.
 Private helpers used by the workflow are defined below.
 """
 
-
+# Crea griglia rettangolare divisa in strati geologici orizzontali tagliati da una faglia diagonale, assegnando a ciascuna cella l'ID del proprio strato
 def create_layered_grid(
     mesh_size,
     Lx=2.0,
@@ -98,7 +98,7 @@ def create_layered_grid(
 
     return sd, cell_layer
 
-
+# Come la precedente, ma ritaglia via dal centro un foro ellittico con contorni irregolari
 def create_layered_grid_with_hole(
     mesh_size,
     Lx=2.0,
@@ -281,7 +281,7 @@ def layers(
         rng_seed=rng_seed,
     )
 
-
+# Questa e quella sotto generano versioni semplificate del dominio (quadrato 1x1 unitario) senza strati e senza faglie
 def create_grid(mesh_size):
     """Create a simple unit-square grid.
 
@@ -354,7 +354,7 @@ def create_grid_with_hole(
     )
     return sd_hole
 
-
+# Converte cooedinate 2D in 3D aggiungendo una riga di zeri 
 def _polygon_to_3d(vertices_xy):
     """Convert a 2xN polygon to PorePy's 3xN format.
 
@@ -371,7 +371,7 @@ def _polygon_to_3d(vertices_xy):
     # PorePy polygon utilities expect 3 coordinates per vertex.
     return np.vstack((vertices_xy, np.zeros((1, vertices_xy.shape[1]))))
 
-
+# Pulisce il poligono rimuovendo punti consecutivi che sono identici o vicinissimi
 def _remove_duplicate_vertices(vertices_xy, tol=1e-12):
     """Remove consecutive duplicate polygon vertices.
 
@@ -399,7 +399,7 @@ def _remove_duplicate_vertices(vertices_xy, tol=1e-12):
 
     return cleaned
 
-
+# Trova quali centri di cella cadono dentro a un dato poligono
 def _points_in_polygon(sd, polygon_xy):
     """Check which cell centers are inside a polygon.
 
@@ -420,7 +420,7 @@ def _points_in_polygon(sd, polygon_xy):
     _, _, in_poly = pp.distances.points_polygon(sd.cell_centers, poly)
     return in_poly
 
-
+# Istanzia fisicamene griglia rettangolare imponendo le linee di frattura / faglia
 def _mesh_from_domain(mesh_size, Lx, Ly, constraints):
     """Build a constrained 2-D mesh in [0, Lx] x [0, Ly].
 
@@ -452,7 +452,7 @@ def _mesh_from_domain(mesh_size, Lx, Ly, constraints):
     sd.compute_geometry()
     return sd
 
-
+# Calcola coordinata x della faglia a una certa altezza y, usando interpolazione lineare tra posizione in basso (xb) e in alto (xt)
 def _fault_x(y, Lx, Ly, xb, xt):
     """Compute fault x-position at height y.
 
@@ -477,7 +477,7 @@ def _fault_x(y, Lx, Ly, xb, xt):
     # Linear interpolation of fault location from bottom to top.
     return (xb + (xt - xb) * (np.asarray(y) / Ly)) * Lx
 
-
+# Restituisce i punti che compongono il segmento della faglia compreso tra le quote y0 e y1
 def _fault_segment(y0, y1, Lx, Ly, frac_x_bottom, frac_x_top, n=5):
     """Build a polyline along the fault between two y-levels.
 
@@ -508,7 +508,7 @@ def _fault_segment(y0, y1, Lx, Ly, frac_x_bottom, frac_x_top, n=5):
     x_vals = _fault_x(y_vals, Lx, Ly, frac_x_bottom, frac_x_top)
     return np.vstack((x_vals, y_vals))
 
-
+# Crea una linea orizzontale zig-zag per simulare interfacce rocciose realistiche
 def _noisy_polyline(x0, x1, y_mean, n_seg, roughness, rng):
     """Create a noisy horizontal polyline and convert it to line constraints.
 
@@ -550,7 +550,7 @@ def _noisy_polyline(x0, x1, y_mean, n_seg, roughness, rng):
 
     return segments, np.vstack((x_pts, y_pts))
 
-
+# Assembla tutte le geometrie strutturali (faglia principale + divisioni frastagliate tra strati), gestendo l'offset verticale tra lato sinistro e destro della faglia
 def _build_layer_constraints(
     Lx,
     Ly,
@@ -636,7 +636,7 @@ def _build_layer_constraints(
 
     return constraints, left_bounds, right_bounds
 
-
+# Questa e quella dopo "chiudono" il perimetro di un singolo strato di roccia. Uniscono upper, lower, muro esterno e faccia faglia in un unico poligono.
 def _left_piece_polygon(lower, upper, Lx, Ly, frac_x_bottom, frac_x_top):
     """Build closed polygon for one left-block layer slice.
 
@@ -700,7 +700,7 @@ def _right_piece_polygon(lower, upper, Lx, Ly, frac_x_bottom, frac_x_top):
         (lower, right_up[:, 1:], np.fliplr(upper), fault_down[:, 1:])
     )
 
-
+# Iterando su ogni strato, verifica quali celle si trovano all'interno del poligono chiuso dello strato e gli assegna l'ID corretto.
 def _classify_layer_cells(
     sd,
     n_layers,
@@ -772,7 +772,7 @@ def _classify_layer_cells(
 
     return cell_layer
 
-
+# Crea ellisse deformata usata per fare il "buco"
 def _noisy_ellipse_polygon(
     center,
     axes,
@@ -836,7 +836,7 @@ def _noisy_ellipse_polygon(
 
     return np.vstack((x, y))
 
-
+# Capisce se due segmenti nel piano si incrociano
 def _segments_intersect(a, b, c, d):
     """Check if closed segments ab and cd intersect (touching included).
 
@@ -883,7 +883,7 @@ def _segments_intersect(a, b, c, d):
 
     return False
 
-
+# Controlla se non fa cose strane impossibili da meshare
 def _is_simple_polygon(polygon_xy):
     """Check whether polygon edges are free of self-intersections.
 
@@ -919,7 +919,7 @@ def _is_simple_polygon(polygon_xy):
 
     return True
 
-
+# Prende vertici dell'ellisse e li trasforma in un array di segmenti lineari digeribili dalla libreria di meshing PorePy
 def _polygon_constraints(polygon_xy):
     """Convert polygon edges to a list of line constraints.
 
@@ -949,7 +949,7 @@ def _polygon_constraints(polygon_xy):
 
     return constraints
 
-
+# Usano le funzioni di partizionamento di PorePy per estrarre solo una porzione della griglia originaria.
 def _subgrid_inside_polygon(sd, polygon_xy):
     """Extract a subgrid made of cells whose centers are inside a polygon.
 

@@ -7,7 +7,7 @@ import numpy as np
 import pygeon as pg
 import porepy as pp
 
-
+# Classe che gestisce tutto il ciclo di vita della risoluzione del problema
 class ElasticProblem:
     """Wrapper for the linear-elasticity workflow on one grid.
 
@@ -23,7 +23,7 @@ class ElasticProblem:
     ElasticProblem
         Instance exposing assembly, solve, and export utilities.
     """
-
+    # Inizializza lo strato interno e prepara FEM
     def __init__(self, sd, key="elasticity"):
         """Initialize the elasticity helper.
 
@@ -43,7 +43,7 @@ class ElasticProblem:
         self.key = key
 
         self.vec_p1 = pg.VecLagrange1(self.key)
-
+    # Costruisce sistema lineare con A matrice di rigidezza e b vettore forze applicate
     def assemble_problem(self, param, body_force, nat_bc_faces):
         """Assemble system matrix and natural-boundary right-hand side.
 
@@ -72,7 +72,7 @@ class ElasticProblem:
         b = self.vec_p1.assemble_nat_bc(self.sd, body_force, nat_bc_faces)
 
         return A, b
-
+    # Risolve sistema con condizioni di Dirichlet, trovando di quanto si sposta ogni nodo e quali sforzi subisce
     def solve_linear_system(self, A, b, ess_bc_faces):
         """Solve the linear system with essential (Dirichlet) constraints.
 
@@ -107,7 +107,7 @@ class ElasticProblem:
             u = np.hstack((u, np.zeros(self.sd.num_nodes))).reshape((3, -1))
 
         return u, sigma
-
+    # Formatta risultati e li scrive su file .vtu, leggibile da software analisi visiva per produrre mappe a colori del dominio
     def export_solution(
         self, u, sigma, folder_export, export_name="sol", cell_data=None
     ):
