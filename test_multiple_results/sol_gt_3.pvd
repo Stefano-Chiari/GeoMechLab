@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <VTKFile type="Collection" version="0.1" byte_order="LittleEndian" compressor="vtkZLibDataCompressor">
 <Collection>
-	<DataSet group="" part="" file="temp_inv_2.vtu"/>
+	<DataSet group="" part="" file="sol_gt_3_2.vtu"/>
 </Collection>
 </VTKFile>

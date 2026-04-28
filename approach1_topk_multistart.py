@@ -219,7 +219,7 @@ def GroupSolutionCP1(measured_displacement, test_id=1, target_point=(0.0, 1.0)):
     # Mesh sizes
     global_mesh  = 0.15   # SPEED: was 0.1 — coarser = faster per eval in Pass A
     zoom_mesh    = 0.1    # Pass B uses original coarse mesh for accuracy
-    refined_mesh = 0.04   # Phase 2 fine mesh (unchanged)
+    refined_mesh = 0.025   # Phase 2 fine mesh: the same of the test set to do not have numerical noise 
 
     # Domain bounds
     X_MIN, X_MAX = 0.3, 1.7
@@ -297,12 +297,26 @@ def GroupSolutionCP1(measured_displacement, test_id=1, target_point=(0.0, 1.0)):
 
     # ─────────────────────────────────────────────────────────────────────
     # PHASE 2 — CHANGE 3: run Nelder-Mead from the top-k candidates
-    #
-    #   Baseline used only top-2. Here we use top-5 (TOP_K = 5) so that
-    #   the optimiser has a better chance of escaping a local minimum in
-    #   a region where the coarse grid was too sparse (e.g. Test-02).
+    #   
+    #   If the best point is on the left hand side we go super fast cause the signal is very good
+    #       - take only the top-2 points
+    #       - tol: 1e-6
+    #       - GOOD_ENOUGH_ERROR: 1e-5
+    #   If the best point is on the right hand side we act more careful cause the signal is slower and can be not good -> local minima
+    #   To provent collapse we use:
+    #       - take the top-5 points
+    #       - tol: 1e-8, so it can't fool us with a false minima
+    #       - GOOD_ENOUGH_ERROR: 1e-7, same as above
     # ─────────────────────────────────────────────────────────────────────
-    TOP_K = 10   # CHANGE 3: was 2 in baseline
+    if coarse_results[0]['center'][0] < 0.9:
+        TOP_K = 2   
+        early_tol = 1e-6
+        GOOD_ENOUGH_ERROR = 1e-5
+    else:
+        TOP_K = 5
+        early_tol = 1e-8
+        GOOD_ENOUGH_ERROR = 1e-7
+
     top_candidates = [res['center'] for res in coarse_results[:TOP_K]]
 
     # FIX 2: seed best_overall with Phase-1 winner so Phase-2 can only improve.
@@ -317,11 +331,6 @@ def GroupSolutionCP1(measured_displacement, test_id=1, target_point=(0.0, 1.0)):
 
     bounds = [(0.25, 1.75), (0.25, 0.75)]
 
-    # FIX 3: tightened GOOD_ENOUGH_ERROR to 1e-4 (was 5e-3).
-    # 5e-3 balanced residual is reachable at spatially wrong locations;
-    # 1e-4 is strict enough to guarantee spatial accuracy.
-    GOOD_ENOUGH_ERROR = 1e-4
-
     with open(log_file_path, "a") as f:
         f.write(f"\n--- PHASE 2 (Nelder-Mead, top-{TOP_K}) ---\n")
 
@@ -329,11 +338,11 @@ def GroupSolutionCP1(measured_displacement, test_id=1, target_point=(0.0, 1.0)):
         print(f"  Candidate {idx+1}/{TOP_K}: start={start_center}")
         try:
             res = minimize(
-                fun=make_cost_with_early_stop(refined_mesh, measured_displacement, tol=1e-5),
+                fun=make_cost_with_early_stop(refined_mesh, measured_displacement, tol=early_tol),
                 x0=start_center,
                 method='Nelder-Mead',
                 bounds=bounds,
-                options={'maxiter': 40}
+                options={'maxiter': 20, 'fatol': early_tol}
             )
             candidate_center = tuple(res.x)
             candidate_error  = res.fun
@@ -408,7 +417,7 @@ def plot_cost_heatmap(coarse_results, true_center, estimated_center, test_id, ex
                edgecolors='black', linewidths=1, zorder=5, label='Optimised Estimate')
 
     ax.set_aspect('equal', adjustable='box')
-    ax.set_title(f"Test {test_id} [Approach 1]: Cost Function Landscape")
+    ax.set_title(f"Test {test_id}: Cost Function Landscape")
     ax.set_xlabel("X (m)")
     ax.set_ylabel("Y (m)")
     ax.legend(loc='upper left', framealpha=0.9, bbox_to_anchor=(1.18, 1))
@@ -416,7 +425,7 @@ def plot_cost_heatmap(coarse_results, true_center, estimated_center, test_id, ex
 
     plot_path = export_folder / f"heatmap_approach1_test_{test_id}.png"
     plt.savefig(plot_path, dpi=300, bbox_inches='tight')
-    plt.show()
+    # plt.show()   
     plt.close()
 
 
