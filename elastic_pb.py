@@ -73,6 +73,39 @@ class ElasticProblem:
 
         return A, b
     # Risolve sistema con condizioni di Dirichlet, trovando di quanto si sposta ogni nodo e quali sforzi subisce
+
+    def assemble_problem_pressure(self, param, body_force, pressure, nat_bc_faces):
+        """Assemble system matrix and natural-boundary right-hand side.
+
+        Parameters
+        ----------
+        param : dict
+            Material and boundary-condition parameters passed to ``pp.initialize_data``.
+        body_force : callable
+            Callback used by ``assemble_nat_bc`` to evaluate boundary traction.
+        nat_bc_faces : np.ndarray
+            Boolean mask or index array selecting faces with natural boundary
+            conditions.
+
+        Returns
+        -------
+        tuple
+            ``(A, b)`` where ``A`` is the assembled stiffness matrix and ``b``
+            is the natural-boundary contribution to the right-hand side.
+        """
+        self.data = pp.initialize_data({}, self.key, param)
+
+        # Step 1: assemble the stiffness matrix from material parameters.
+        A = self.vec_p1.assemble_stiff_matrix_elasticity(self.sd, self.data)
+
+        # Step 2: assemble Neumann (natural) boundary contribution.
+        b = self.vec_p1.assemble_nat_bc(self.sd, body_force, nat_bc_faces)
+
+        # Step 3: assemble pressure term
+        M = self.vec_p1.assemble_div_matrix(self.sd)
+        b += M.T@pressure
+        return A, b
+    
     def solve_linear_system(self, A, b, ess_bc_faces):
         """Solve the linear system with essential (Dirichlet) constraints.
 

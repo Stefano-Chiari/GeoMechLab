@@ -95,3 +95,48 @@ def solve_and_export(sd, folder_export, export_name, cell_data=None):
     )
     # restituisce campo degli spostamenti calcolato
     return u
+
+def solve_and_export_pressure(sd, layers, layer_ID, pressure_val, folder_export, export_name, cell_data=None):
+    """Solve linear elasticity on a grid and export solution fields.
+
+    Parameters
+    ----------
+    sd : pg.Grid
+        Grid used for discretization and assembly.
+    folder_export : str or pathlib.Path
+        Output directory where exported files are written.
+    export_name : str
+        Base name used by the exporter for output files.
+    cell_data : list[tuple[str, np.ndarray]] or None, optional
+        Optional additional cell fields to export.
+
+    Returns
+    -------
+    np.ndarray
+        Displacement field returned by the linear solver.
+    """
+    # Step 1: define material parameters and standard boundary masks.
+    lambda_ = 1.0
+    mu = 0.5
+    param = {pg.LAME_LAMBDA: lambda_, pg.LAME_MU: mu}
+    bottom, top = _standard_boundary_masks(sd)
+    sd.compute_geometry()
+
+    pressure = np.array(pressure_val*(layers==layer_ID))
+
+    # Step 2: assemble and solve the discrete elasticity system.
+    elastic_pb = ElasticProblem(sd)
+    A, b = elastic_pb.assemble_problem_pressure(param, _default_traction,pressure, top)
+    u, sigma = elastic_pb.solve_linear_system(A, b, bottom)
+
+    # Step 3: export through ElasticProblem only (single exporter path).
+    elastic_pb.export_solution(
+        u,
+        sigma,
+        folder_export,
+        export_name=export_name,
+        cell_data=cell_data,
+    )
+
+    return u
+
