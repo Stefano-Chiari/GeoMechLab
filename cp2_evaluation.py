@@ -174,7 +174,7 @@ def GroupSolutionCP2(layer_ID, pressure_value, center_location_mean, center_loca
         Input: x (float o array) - Coordinata orizzontale sulla superficie (m).
         Output: [Ux(x), Uy(x)] - Vettore degli spostamenti.
         """
-        return [float(interp_ux(x)), float(interp_uy(x))]
+        return interp_ux(x), interp_uy(x)
 
     # Il valore da ritornare ora è la funzione stessa
     mean_surface_displacement = mean_surface_displacement_func
