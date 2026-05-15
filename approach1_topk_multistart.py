@@ -475,7 +475,7 @@ def run_multiple_inversion_tests(num_tests=5, seed=42):
             test_id=test_id,
             target_point=target_point
         )
-
+        
         error_x = abs(true_center[0] - estimated_center[0])
         error_y = abs(true_center[1] - estimated_center[1])
         dist = np.sqrt(error_x**2 + error_y**2)
