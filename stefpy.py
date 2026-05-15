@@ -148,7 +148,7 @@ def GroupSolutionCP2(layer_ID, pressure_value, center_location_mean, center_loca
     
     # Caricamento dei modelli
     try:
-        _models_dir = Path("/Users/chloe/Uni/SciComp/project2/models")
+        _models_dir = Path.cwd() / "models"
         gp_ux_surf   = joblib.load(_models_dir / f"gp_ux_surf_layer_{layer_ID}.pkl")
         gp_uy_surf   = joblib.load(_models_dir / f"gp_uy_surf_layer_{layer_ID}.pkl")
         gp_corner_ux = joblib.load(_models_dir / f"gp_corner_ux_layer_{layer_ID}.pkl")
