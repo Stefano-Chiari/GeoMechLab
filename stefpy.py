@@ -50,15 +50,6 @@ solve_and_export_pressure(
     )
 
 
-def GroupSolutionCP2( layer_ID , pressure_value, center_location_mean, center_location_std ):
-
-    # your implementation
-
-    # format of the output (as a function)
-    # surface_displacement 
-    #CI_corner = [(0.1,0.2),(0.15,0.25)]
-
-    return mean_surface_displacement, CI_corner
 import numpy as np
 import shutil
 from pathlib import Path
