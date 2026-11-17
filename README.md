@@ -1,3 +1,20 @@
+# Subsurface Cavity Detection from Surface Displacements
+
+Team project for *Scientific Computing Tools for Advanced Mathematical Modelling*,
+Politecnico di Milano (2026), with Chloe Syrimi and Edoardo Venturoli.
+
+**Goal:** recover a cavity and an anomalous pressure layer in a 2D layered terrain
+from surface displacement measurements.
+
+**Method:** FEM-based inversion with a precomputed database and local RBF interpolation →
+Gaussian-process emulator of the forward problem → emulator-in-the-loop optimisation.
+
+**Results:** layer and pressure recovered in all test scenarios, cavity centre in 8 out of 10
+(the two failures are due to physical non-identifiability).
+
+**Report:** [full report](docs/report.pdf)
+
+---
 # GeoMechLab
 
 Repository of the second guided project of the course "Scientific Computing Tools for Advanced Mathematical Modelling" AY 2025/2026.
